@@ -87,9 +87,11 @@
 #endif
 
 static bool parse_accesscheck   (const struct parser_table*, char *argv[], int *arg_ptr);
+static bool parse_after         (const struct parser_table*, char *argv[], int *arg_ptr);
 static bool parse_amin          (const struct parser_table*, char *argv[], int *arg_ptr);
 static bool parse_and           (const struct parser_table*, char *argv[], int *arg_ptr);
 static bool parse_anewer        (const struct parser_table*, char *argv[], int *arg_ptr);
+static bool parse_before        (const struct parser_table*, char *argv[], int *arg_ptr);
 static bool parse_cmin          (const struct parser_table*, char *argv[], int *arg_ptr);
 static bool parse_cnewer        (const struct parser_table*, char *argv[], int *arg_ptr);
 static bool parse_comma         (const struct parser_table*, char *argv[], int *arg_ptr);
@@ -234,10 +236,12 @@ static struct parser_table const parse_table[] =
   PARSE_PUNCTUATION(")",                     closeparen), /* POSIX */
   PARSE_PUNCTUATION(",",                     comma),	     /* GNU */
   PARSE_PUNCTUATION("a",                     and), /* POSIX */
+  PARSE_TEST       ("after",                 after),         /* BrightDate */
   PARSE_TEST       ("amin",                  amin),	     /* GNU */
   PARSE_PUNCTUATION("and",                   and),		/* GNU */
   PARSE_TEST       ("anewer",                anewer),	     /* GNU */
   {ARG_TEST,       "atime",                  parse_time, pred_atime}, /* POSIX */
+  PARSE_TEST       ("before",                before),       /* BrightDate */
   PARSE_TEST       ("cmin",                  cmin),	     /* GNU */
   PARSE_TEST       ("cnewer",                cnewer),	     /* GNU */
   {ARG_TEST,       "ctime",                  parse_time, pred_ctime}, /* POSIX */
@@ -782,6 +786,74 @@ parse_and (const struct parser_table* entry, char **argv, int *arg_ptr)
   return true;
 }
 
+/* parse_after -- -after <bd>
+   Accept a BrightDate scalar and match files whose mtime is after that
+   instant.  Falls back to parse-datetime strings for convenience. */
+static bool
+parse_after (const struct parser_table* entry, char **argv, int *arg_ptr)
+{
+  struct predicate *our_pred;
+  const char *arg;
+  double bd_val;
+
+  if (!collect_arg (argv, arg_ptr, &arg))
+    return false;
+
+  our_pred = insert_primary (entry, arg);
+  our_pred->args.reftime.xval = XVAL_MTIME;
+  our_pred->args.reftime.kind = COMP_GT;
+
+  if (parse_brightdate_literal (arg, &bd_val))
+    {
+      our_pred->args.reftime.ts = bd_to_timespec (bd_val);
+    }
+  else if (!parse_datetime (&our_pred->args.reftime.ts, arg,
+                            &options.start_time))
+    {
+      error (EXIT_FAILURE, 0,
+             _("I cannot figure out how to interpret %s as a BrightDate or date/time"),
+             quotearg_n_style (0, options.err_quoting_style, arg));
+    }
+
+  our_pred->est_success_rate =
+    estimate_timestamp_success_rate (our_pred->args.reftime.ts.tv_sec);
+  return true;
+}
+
+/* parse_before -- -before <bd>
+   Accept a BrightDate scalar and match files whose mtime is before that
+   instant.  Falls back to parse-datetime strings for convenience. */
+static bool
+parse_before (const struct parser_table* entry, char **argv, int *arg_ptr)
+{
+  struct predicate *our_pred;
+  const char *arg;
+  double bd_val;
+
+  if (!collect_arg (argv, arg_ptr, &arg))
+    return false;
+
+  our_pred = insert_primary (entry, arg);
+  our_pred->args.reftime.xval = XVAL_MTIME;
+  our_pred->args.reftime.kind = COMP_LT;
+
+  if (parse_brightdate_literal (arg, &bd_val))
+    {
+      our_pred->args.reftime.ts = bd_to_timespec (bd_val);
+    }
+  else if (!parse_datetime (&our_pred->args.reftime.ts, arg,
+                            &options.start_time))
+    {
+      error (EXIT_FAILURE, 0,
+             _("I cannot figure out how to interpret %s as a BrightDate or date/time"),
+             quotearg_n_style (0, options.err_quoting_style, arg));
+    }
+
+  our_pred->est_success_rate =
+    estimate_timestamp_success_rate (our_pred->args.reftime.ts.tv_sec);
+  return true;
+}
+
 static bool
 parse_anewer (const struct parser_table* entry, char **argv, int *arg_ptr)
 {
@@ -856,21 +928,18 @@ parse_comma (const struct parser_table* entry, char **argv, int *arg_ptr)
 static bool
 parse_daystart (const struct parser_table* entry, char **argv, int *arg_ptr)
 {
-  struct tm *local;
-
   (void) entry;
   (void) argv;
   (void) arg_ptr;
 
   if (options.full_days == false)
     {
-      options.cur_day_start.tv_sec += DAYSECS;
-      options.cur_day_start.tv_nsec = 0;
-      local = localtime (&options.cur_day_start.tv_sec);
-      options.cur_day_start.tv_sec -= (local
-				       ? (local->tm_sec + local->tm_min * 60
-					  + local->tm_hour * 3600)
-				       : options.cur_day_start.tv_sec % DAYSECS);
+      /* Compute the BrightDate integer corresponding to the start of the
+         current BD day and convert it back to a UTC timespec.  This defines
+         "today" on the continuous, leap-second-free BrightDate timeline. */
+      double bd_now   = timespec_to_bd (options.start_time);
+      double bd_floor = floor (bd_now);
+      options.cur_day_start = bd_to_timespec (bd_floor);
       options.full_days = true;
     }
   return true;
@@ -1180,6 +1249,7 @@ parse_help (const struct parser_table* entry, char **argv, int *arg_ptr)
   (void) arg_ptr;
 
   usage (EXIT_SUCCESS);
+  return false; /* unreachable, but silences -Wreturn-type */
 }
 
 static float
@@ -1572,7 +1642,12 @@ parse_newerXY (const struct parser_table* entry, char **argv, int *arg_ptr)
 
 	  if ('t' == y)
 	    {
-	      if (!parse_datetime (&our_pred->args.reftime.ts,
+	      double bd_val;
+	      if (parse_brightdate_literal (argv[*arg_ptr], &bd_val))
+		{
+		  our_pred->args.reftime.ts = bd_to_timespec (bd_val);
+		}
+	      else if (!parse_datetime (&our_pred->args.reftime.ts,
 				   argv[*arg_ptr],
 				   &options.start_time))
 		{

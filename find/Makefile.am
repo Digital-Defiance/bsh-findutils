@@ -18,15 +18,15 @@ AM_CFLAGS = $(WARN_CFLAGS)
 localedir = $(datadir)/locale
 
 noinst_LIBRARIES = libfindtools.a
-libfindtools_a_SOURCES = finddata.c fstype.c parser.c pred.c exec.c tree.c util.c sharefile.c print.c
+libfindtools_a_SOURCES = finddata.c fstype.c parser.c pred.c exec.c tree.c util.c sharefile.c print.c brightdate.c
 
-# We only build the version of find with fts (called "find"),
+# We only build the version of find with fts (called "bfind"),
 # i.e., no longer the one called "oldfind".
-bin_PROGRAMS     = find
-find_SOURCES     = ftsfind.c
-man_MANS         = find.1
+bin_PROGRAMS     = bfind
+bfind_SOURCES     = ftsfind.c
+man_MANS         = bfind.1
 
-EXTRA_DIST = defs.h sharefile.h print.h $(man_MANS)
+EXTRA_DIST = defs.h sharefile.h print.h brightdate.h $(man_MANS)
 AM_CPPFLAGS = -I../gl/lib -I$(top_srcdir)/lib -I$(top_srcdir)/gl/lib -DLOCALEDIR=\"$(localedir)\"
 LDADD = libfindtools.a ../lib/libfind.a ../gl/lib/libgnulib.a $(LIBINTL) $(LIB_CLOCK_GETTIME) $(LIB_EACCESS) $(LIB_SELINUX) $(LIB_CLOSE) $(MODF_LIBM) $(FINDLIBS) $(GETHOSTNAME_LIB) $(LIB_EACCESS) $(LIB_SETLOCALE_NULL) $(LIB_MBRTOWC)
 # gnulib advises we link against <first> because we use <second>:

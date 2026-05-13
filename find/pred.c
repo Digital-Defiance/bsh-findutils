@@ -599,6 +599,26 @@ pred_mtime (const char *pathname, struct stat *stat_buf, struct predicate *pred_
 }
 
 bool
+pred_after (const char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
+{
+  /* -after <bd>: true if the file's mtime is strictly after the reference.
+     kind is always COMP_GT; the window argument is irrelevant for GT/LT. */
+  (void) pathname;
+  assert (COMP_GT == pred_ptr->args.reftime.kind);
+  return compare_ts (get_stat_mtime (stat_buf), pred_ptr->args.reftime.ts) > 0;
+}
+
+bool
+pred_before (const char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
+{
+  /* -before <bd>: true if the file's mtime is strictly before the reference.
+     kind is always COMP_LT; the window argument is irrelevant for GT/LT. */
+  (void) pathname;
+  assert (COMP_LT == pred_ptr->args.reftime.kind);
+  return compare_ts (get_stat_mtime (stat_buf), pred_ptr->args.reftime.ts) < 0;
+}
+
+bool
 pred_name (const char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 {
   (void) stat_buf;

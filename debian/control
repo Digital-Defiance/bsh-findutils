@@ -1,0 +1,28 @@
+Source: bright-findutils
+Section: utils
+Priority: optional
+Maintainer: Digital Defiance <admin@digitaldefiance.org>
+Build-Depends: debhelper-compat (= 13),
+               autoconf (>= 2.69),
+               automake (>= 1.15),
+               gettext,
+               texinfo
+Standards-Version: 4.6.2
+Homepage: <https://github.com/Digital-Defiance/bright-findutils>
+Vcs-Git: <https://github.com/Digital-Defiance/bright-findutils.git>
+Vcs-Browser: <https://github.com/Digital-Defiance/bright-findutils>
+
+Package: bright-findutils
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Description: GNU findutils with BrightDate time system
+ GNU findutils patched to support BrightDate timestamps. Provides bfind,
+ blocate, bupdatedb, and bxargs — BrightDate-aware counterparts to the
+ standard GNU find utilities.
+ .
+ BrightDate is a decimal SI day count since J2000.0 (2000-01-01T12:00:00 TT)
+ measured on the TAI timescale, with no leap-second discontinuities.
+ .
+ This package installs the bright variants only (bfind, blocate, bupdatedb,
+ bxargs) and does not conflict with or replace the standard findutils package.

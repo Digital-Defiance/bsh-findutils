@@ -1,0 +1,56 @@
+#!/usr/bin/make -f
+override_dh_auto_clean:
+	if [ -f Makefile ]; then \
+		$(MAKE) distclean; \
+	fi
+	if [ -f Makefile ]; then \
+		dh_auto_clean; \
+	else \
+		echo "Skipping dh_auto_clean: no Makefile"; \
+	fi
+# debian/rules for bright-findutils
+# Builds only the BrightDate-aware binaries; does not build or install
+# the standard find/locate/xargs binaries so this package coexists
+# safely with the system findutils.
+
+export DH_VERBOSE = 1
+
+
+# Prevent dh_auto_test from running the upstream test suite, which
+# requires a full DejaGnu/Expect/Tcl toolchain.
+DEB_BUILD_OPTIONS ?= nocheck
+
+PACKAGE := bright-findutils
+DESTDIR := $(CURDIR)/debian/$(PACKAGE)
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	autoreconf -fi
+	dh_auto_configure -- \
+		--disable-dependency-tracking \
+		--disable-silent-rules \
+		--disable-nls
+
+# Build only the subdirectories that contain the bright variants.
+override_dh_auto_build:
+	$(MAKE) -C gl
+	$(MAKE) -C lib
+	$(MAKE) -C find    bfind
+	$(MAKE) -C locate  blocate bupdatedb
+	$(MAKE) -C xargs   bxargs
+
+# Install only the bright binaries and their man pages.
+override_dh_auto_install:
+	install -D -m 0755 find/bfind           $(DESTDIR)/usr/bin/bfind
+	install -D -m 0755 locate/blocate       $(DESTDIR)/usr/bin/blocate
+	install -D -m 0755 locate/bupdatedb     $(DESTDIR)/usr/bin/bupdatedb
+	install -D -m 0755 xargs/bxargs         $(DESTDIR)/usr/bin/bxargs
+	install -D -m 0644 find/bfind.1         $(DESTDIR)/usr/share/man/man1/bfind.1
+	install -D -m 0644 locate/blocate.1     $(DESTDIR)/usr/share/man/man1/blocate.1
+	install -D -m 0644 locate/bupdatedb.1   $(DESTDIR)/usr/share/man/man1/bupdatedb.1
+	install -D -m 0644 xargs/bxargs.1       $(DESTDIR)/usr/share/man/man1/bxargs.1
+
+# No upstream test suite run in package builds.
+override_dh_auto_test:

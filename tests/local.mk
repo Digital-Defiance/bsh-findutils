@@ -15,7 +15,7 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-built_programs = find xargs frcode locate updatedb
+built_programs = bfind bxargs frcode blocate bupdatedb
 
 # Indirections required so that we'll still be able to know the
 # complete list of our tests even if the user overrides TESTS
@@ -131,6 +131,9 @@ sh_tests = \
   tests/xargs/conflicting_opts.sh \
   tests/xargs/verbose-quote.sh \
   tests/find/arg-nan.sh \
+  tests/find/brightdate_printf.sh \
+  tests/find/brightdate_after_before.sh \
+  tests/find/brightdate_daystart.sh \
   $(all_root_tests)
 
 $(TEST_LOGS): $(PROGRAMS)

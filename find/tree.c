@@ -970,6 +970,8 @@ static struct pred_cost_lookup costlookup[] =
     { pred_fls       ,  NeedsStatInfo        },
     { pred_mmin	     ,  NeedsStatInfo        },
     { pred_mtime     ,  NeedsStatInfo        },
+    { pred_after     ,  NeedsStatInfo        },
+    { pred_before    ,  NeedsStatInfo        },
     { pred_name	     ,  NeedsNothing         },
     { pred_negate    ,  NeedsNothing,        },
     { pred_newer     ,  NeedsStatInfo,       },

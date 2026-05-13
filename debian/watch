@@ -1,0 +1,4 @@
+version=4
+opts="filenamemangle=s/.+\/v?(\d[\d.]*-bd\d+)\.tar\.gz/bright-findutils-$1.tar.gz/" \
+  <https://github.com/Digital-Defiance/bright-findutils/releases> \
+  .*/v?(\d[\d.]*-bd\d+)\.tar\.gz

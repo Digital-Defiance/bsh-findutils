@@ -21,16 +21,16 @@ LOCATE_DB = $(localstatedir)/locatedb
 localedir = $(datadir)/locale
 
 AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = frcode$(EXEEXT)
-bin_PROGRAMS = locate
+bin_PROGRAMS = blocate
 libexec_PROGRAMS = frcode
-bin_SCRIPTS = updatedb
-man_MANS = locate.1 updatedb.1 locatedb.5
+bin_SCRIPTS = bupdatedb
+man_MANS = blocate.1 bupdatedb.1 locatedb.5
 BUILT_SOURCES = dblocation.texi
 EXTRA_DIST = locatedb.h updatedb.sh $(man_MANS)
-CLEANFILES = updatedb
+CLEANFILES = bupdatedb
 
 DISTCLEANFILES = dblocation.texi
-locate_SOURCES = locate.c word_io.c
+blocate_SOURCES = locate.c word_io.c ../find/brightdate.c
 nodist_locate_TEXINFOS = dblocation.texi
 
 AM_CPPFLAGS = -I$(top_srcdir)/lib -I../gl/lib -I$(top_srcdir)/gl/lib -DLOCATE_DB=\"$(LOCATE_DB)\" -DLOCALEDIR=\"$(localedir)\"
@@ -42,9 +42,9 @@ $(PROGRAMS) $(LIBPROGRAMS): ../lib/libfind.a ../gl/lib/libgnulib.a
 # We generate updatedb from the Makefile rather than with AC_OUTPUT in
 # configure.ac in order to allow the user better control of what goes
 # into it by setting Makefile variables.
-updatedb: updatedb.sh Makefile
+bupdatedb: updatedb.sh Makefile
 	rm -f $@
-	find=`echo find|sed '$(transform)'`; \
+	find=`echo bfind|sed '$(transform)'`; \
 	frcode=`echo frcode|sed '$(transform)'`; \
 	copyright=`sed -n '/^# Copyright /{s/^..//;p;q;}' $(srcdir)/updatedb.sh \
 	  grep .` || exit 1; \

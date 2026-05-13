@@ -136,6 +136,7 @@ make_segment (struct segment **segment,
     case 's':                   /* size in bytes */
     case 't':                   /* mtime in `ctime' format */
     case 'T':                   /* mtime in user-specified strftime format */
+    case 'W':                   /* BrightDate timestamp (2nd char selects which) */
     case 'u':                   /* user name */
       pred->need_stat = true;
       mycost = NeedsStatInfo;
@@ -283,7 +284,7 @@ get_format_specifer_length(char ch)
     {
       return 1;
     }
-  else if (strchr ("ABCT", ch))
+  else if (strchr ("ABCTW", ch))
     {
       return 2;
     }
@@ -578,6 +579,16 @@ do_time_format (const char *fmt, const struct tm *p, const char *ns, size_t ns_s
  * really runtime checks.  The assertions actually exist to verify
  * that the various buffers are correctly sized.
  */
+/* Return a BrightDate string for TS.  Uses a static buffer; not reentrant. */
+static const char *
+brightdate_format (struct timespec ts)
+{
+  static char buf[64];
+  double bd = timespec_to_bd (ts);
+  snprintf (buf, sizeof buf, "%.9f", bd);
+  return buf;
+}
+
 static char *
 format_date (struct timespec ts, int kind)
 {
@@ -1240,7 +1251,11 @@ do_fprintf (struct format_val *dest,
             else
               {
                 checked_fprintf (dest, segment->text, scontext);
+#ifdef HAVE_SELINUX_SELINUX_H
                 freecon (scontext);
+#else
+                free (scontext);
+#endif
               }
           }
           break;
@@ -1298,6 +1313,18 @@ pred_fprintf (const char *pathname, struct stat *stat_buf, struct predicate *pre
               ts = get_stat_mtime (stat_buf);
               valid = 1;
               break;
+            case 'W':  /* BrightDate: 2nd char selects timestamp type */
+              switch (segment->format_char[1])
+                {
+                case 'a': ts = get_stat_atime (stat_buf);      break;
+                case 'c': ts = get_stat_ctime (stat_buf);      break;
+                case 'B': ts = get_stat_birthtime (stat_buf);  break;
+                case 't': /* fall through */
+                default:  ts = get_stat_mtime (stat_buf);      break;
+                }
+              /* trusted */
+              checked_fprintf (dest, segment->text, brightdate_format (ts));
+              continue;  /* skip the shared format_date path below */
             default:
               assert (0);
               abort ();

@@ -1,0 +1,139 @@
+
+# bright-findutils .gitignore
+# ================================
+homebrew-tap
+
+# -----------------------------------------------------------------------
+# Autotools build system generated files
+# -----------------------------------------------------------------------
+/aclocal.m4
+/autom4te.cache/
+/config.h
+/config.h.in~
+/config.log
+/config.status
+/configure
+/stamp-h.in
+stamp-h1
+stamp-h[0-9]*
+
+# Generated Makefiles
+Makefile
+Makefile.in
+
+# Libtool
+.libs/
+.deps/
+*.la
+*.lo
+
+# -----------------------------------------------------------------------
+# Compiled object files and static archives
+# -----------------------------------------------------------------------
+*.o
+*.a
+*.so
+*.dylib
+*.out
+
+# -----------------------------------------------------------------------
+# Built binaries (b* tools)
+# -----------------------------------------------------------------------
+find/bfind
+locate/blocate
+locate/bupdatedb
+xargs/bxargs
+
+# Upstream names (in case configure target wasn't renamed)
+find/find
+locate/locate
+locate/updatedb
+xargs/xargs
+
+# frcode and getlimits helpers
+locate/frcode
+find/getlimits
+
+# -----------------------------------------------------------------------
+# Test infrastructure
+# -----------------------------------------------------------------------
+tests/test-suite.log
+tests/**/*.log
+tests/**/*.trs
+tests/xargs/test-sigusr
+gnulib-tests/*.log
+gnulib-tests/*.trs
+gnulib-tests/test-*
+
+# -----------------------------------------------------------------------
+# Documentation generated files
+# -----------------------------------------------------------------------
+doc/*.info
+doc/*.html
+doc/*.pdf
+doc/*.dvi
+doc/*.ps
+doc/version.texi
+doc/stamp-vti
+doc/stamp-1
+
+# -----------------------------------------------------------------------
+# Gnulib / gl subdirectory
+# -----------------------------------------------------------------------
+gl/Makefile
+gl/lib/*.h
+gl/lib/*.c
+
+# -----------------------------------------------------------------------
+# po / i18n
+# -----------------------------------------------------------------------
+po/Makefile
+po/Makefile.in
+po/*.gmo
+po/*.mo
+
+# -----------------------------------------------------------------------
+# Rust (brightdate-rust subtree)
+# -----------------------------------------------------------------------
+brightdate-rust/target/
+brightdate-rust/Cargo.lock
+
+# -----------------------------------------------------------------------
+# Editor and IDE artifacts
+# -----------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*~
+\#*\#
+.#*
+*.orig
+*.rej
+
+# -----------------------------------------------------------------------
+# macOS
+# -----------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# -----------------------------------------------------------------------
+# Installation staging
+# -----------------------------------------------------------------------
+/tmp/bfind-test/
+
+# -----------------------------------------------------------------------
+# Misc
+# -----------------------------------------------------------------------
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+GPATH
+GRTAGS
+GTAGS
+tags
+TAGS
+cscope.*
+
+# Codacy AI rules (not for repository distribution)
+.github/instructions/codacy.instructions.md

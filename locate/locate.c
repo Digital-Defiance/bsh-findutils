@@ -100,6 +100,7 @@
 #include "locatedb.h"
 #include "printquoted.h"
 #include "splitstring.h"
+#include "../find/brightdate.h"
 
 
 /* Warn if a database is older than this.  8 days allows for a weekly
@@ -832,23 +833,8 @@ print_stats (int argc, size_t database_file_size, const struct timespec* databas
 
   if (database_mtime)
     {
-      const struct tm *ptm = localtime (&(database_mtime->tv_sec));
-      if (ptm)
-        {
-          enum { TIME_BUF_LEN = 20 };
-          char whenbuf[TIME_BUF_LEN];
-          size_t printed = strftime (whenbuf, TIME_BUF_LEN,
-                                     "%Y:%m:%d %H:%M:%S", ptm);
-          /* Ensure the buffer is exactly the right length. */
-          assert (printed == TIME_BUF_LEN-1);
-          assert (whenbuf[TIME_BUF_LEN-1] == 0);
-          assert (whenbuf[TIME_BUF_LEN-2] != 0);
-          printf (_("Database was last modified at %s.%09ld"),
-                  whenbuf, (long int) database_mtime->tv_nsec);
-          printed = strftime (whenbuf, TIME_BUF_LEN, "%z", ptm);
-          assert (printed == 5);
-          printf(" %s\n", whenbuf);
-        }
+      double bd = timespec_to_bd (*database_mtime);
+      printf (_("Database was last modified at BD %.9f\n"), bd);
     }
 
   printf (ngettext ("Locate database size: %s byte\n",

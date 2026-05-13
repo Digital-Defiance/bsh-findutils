@@ -47,7 +47,9 @@ Please stop compiling the program now
 # include <stdbool.h>		/* for bool */
 # include <stdint.h>		/* for uintmax_t */
 # include <sys/stat.h> /* S_ISUID etc. */
-# include <selinux/selinux.h>
+# ifdef HAVE_SELINUX_SELINUX_H
+#  include <selinux/selinux.h>
+# endif
 
 
 
@@ -63,6 +65,7 @@ Please stop compiling the program now
 # include "quotearg.h"
 # include "sharefile.h"
 # include "gcc-function-attributes.h"
+# include "brightdate.h"
 
 int optionl_stat (const char *name, struct stat *p);
 int optionp_stat (const char *name, struct stat *p);
@@ -402,8 +405,10 @@ typedef bool PREDICATEFUNCTION(const char *pathname, struct stat *stat_buf, stru
 
 PREDICATEFUNCTION pred_amin;
 PREDICATEFUNCTION pred_and;
+PREDICATEFUNCTION pred_after;
 PREDICATEFUNCTION pred_anewer;
 PREDICATEFUNCTION pred_atime;
+PREDICATEFUNCTION pred_before;
 PREDICATEFUNCTION pred_closeparen;
 PREDICATEFUNCTION pred_cmin;
 PREDICATEFUNCTION pred_cnewer;
