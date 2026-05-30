@@ -203,6 +203,17 @@
       .out {
         color: var(--yellow);
       }
+      .out-bd-int {
+        color: #50c8dc;
+        font-weight: 700;
+      }
+      .out-bd-frac {
+        color: #c8ccd6;
+      }
+      .out-bd-path {
+        color: var(--text-bright);
+        font-weight: 700;
+      }
       .cmt {
         color: #6b7399;
       }
@@ -524,6 +535,9 @@
         that floors to the BrightDate boundary. One sortable, timezone-free
         scalar — everywhere.
       </p>
+      <p class="hero-sub">
+        Now with colorized output for easy scanning
+      </p>
 
       <div class="terminal">
         <div class="terminal-bar">
@@ -534,15 +548,15 @@
         <!-- prettier-ignore -->
         <div class="terminal-body">
           <div class="cmd-line"><span class="cmt"># files modified after BD 9600 (≈ Sep 2025) — no date parsing, no TZ</span></div>
-          <div class="cmd-line"><span class="prompt">$</span><span class="cmd">bfind . -after 9600 -name '*.log' -printf '%Wt %p\n'</span></div>
-          <div class="cmd-line"><span class="out">9628.195697 ./app.log</span></div>
-          <div class="cmd-line"><span class="out">9615.320041 ./audit.log</span></div>
+          <div class="cmd-line"><span class="prompt">$</span><span class="cmd"> bfind . -after 9600 -name '*.log' -printf '%Wt %p\n'</span></div>
+          <div class="cmd-line"><span class="out-bd-int">9628</span><span class="out-bd-frac">.195697</span> <span class="out-bd-path">./app.log</span></div>
+          <div class="cmd-line"><span class="out-bd-int">9615</span><span class="out-bd-frac">.320041</span> <span class="out-bd-path">./audit.log</span></div>
           <div class="cmd-line" style="margin-top: 0.6rem"><span class="cmt"># how old is the newest source file? — plain float subtraction</span></div>
-          <div class="cmd-line"><span class="prompt">$</span><span class="cmd">age=$(bfind . -name '*.c' -printf '%Wt\n' | sort -rn | head -1)</span></div>
-          <div class="cmd-line"><span class="prompt">$</span><span class="cmd">echo "newest: BD $age — $(echo "($age - 9628) * 86400 / 3600" | bc) h old"</span></div>
+          <div class="cmd-line"><span class="prompt">$</span><span class="cmd"> age=$(bfind . -name '*.c' -printf '%Wt\n' | sort -rn | head -1)</span></div>
+          <div class="cmd-line"><span class="prompt">$</span><span class="cmd"> echo "newest: BD $age — $(echo "($age - 9628) * 86400 / 3600" | bc) h old"</span></div>
           <div class="cmd-line"><span class="out">newest: BD 9628.197104 — 4.7 h old</span></div>
           <div class="cmd-line" style="margin-top: 0.6rem"><span class="cmt"># database-backed search; DB timestamp shown as BD</span></div>
-          <div class="cmd-line"><span class="prompt">$</span><span class="cmd">blocate kernel | head -3</span></div>
+          <div class="cmd-line"><span class="prompt">$</span><span class="cmd"> blocate kernel | head -3</span></div>
           <div class="cmd-line"><span class="out">Database: /var/db/locate.database (BD 9628.12) 6 423 144 entries</span></div>
         </div>
       </div>
@@ -736,8 +750,8 @@ bfind . -before 9000 -name '*.log' -delete</code></pre>
             <pre
               style="margin-top: 0.75rem; font-size: 0.78rem"
             ><code>bfind . -printf '%Wt %p\n' | sort -rn | head -5
-# 9628.197104 ./src/pred.c
-# 9628.195697 ./src/parser.c
+# <span class="out-bd-int">9628</span><span class="out-bd-frac">.197104</span> <span class="out-bd-path">./src/pred.c</span>
+# <span class="out-bd-int">9628</span><span class="out-bd-frac">.195697</span> <span class="out-bd-path">./src/parser.c</span>
 # …</code></pre>
           </div>
 
@@ -824,14 +838,14 @@ Database: /var/db/locate.database
           <!-- prettier-ignore -->
           <div class="terminal-body">
             <div class="cmd-line"><span class="cmt"># print the 10 most-recently modified files as BD + path</span></div>
-            <div class="cmd-line"><span class="prompt">$</span><span class="cmd">bfind . -maxdepth 3 -type f -printf '%Wt\t%p\n' | sort -rn | head -10</span></div>
-            <div class="cmd-line"><span class="out">9628.197104 ./find/pred.c</span></div>
-            <div class="cmd-line"><span class="out">9628.195697 ./find/parser.c</span></div>
-            <div class="cmd-line"><span class="out">9628.194201 ./find/brightdate.c</span></div>
+            <div class="cmd-line"><span class="prompt">$</span><span class="cmd"> bfind . -maxdepth 3 -type f -printf '%Wt\t%p\n' | sort -rn | head -10</span></div>
+            <div class="cmd-line"><span class="out"><span class="out-bd-int">9628</span><span class="out-bd-frac">.197104</span> <span class="out-bd-path">./find/pred.c</span></span></div>
+            <div class="cmd-line"><span class="out"><span class="out-bd-int">9628</span><span class="out-bd-frac">.195697</span> <span class="out-bd-path">./find/parser.c</span></span></div>
+            <div class="cmd-line"><span class="out"><span class="out-bd-int">9628</span><span class="out-bd-frac">.194201</span> <span class="out-bd-path">./find/brightdate.c</span></span></div>
             <div class="cmd-line" style="margin-top: 0.6rem"><span class="cmt"># find C files modified since BD 9625 and run clang-format on them</span></div>
-            <div class="cmd-line"><span class="prompt">$</span><span class="cmd">bfind src -after 9625 -name '*.c' -print0 | bxargs -0 clang-format -i</span></div>
+            <div class="cmd-line"><span class="prompt">$</span><span class="cmd"> bfind src -after 9625 -name '*.c' -print0 | bxargs -0 clang-format -i</span></div>
             <div class="cmd-line" style="margin-top: 0.6rem"><span class="cmt"># age of every log — float subtraction in awk, no date library</span></div>
-            <div class="cmd-line"><span class="prompt">$</span><span class="cmd">bfind /var/log -name '*.log' -printf '%Wt %p\n' \</span></div>
+            <div class="cmd-line"><span class="prompt">$</span><span class="cmd"> bfind /var/log -name '*.log' -printf '%Wt %p\n' \</span></div>
             <div class="cmd-line"><span class="prompt"> </span><span class="cmd">  | awk '{printf "%.4f days old %s\n", 9628.2 - $1, $2}'</span></div>
             <div class="cmd-line"><span class="out">0.0042 days old /var/log/system.log</span></div>
             <div class="cmd-line"><span class="out">3.1804 days old /var/log/install.log</span></div>
