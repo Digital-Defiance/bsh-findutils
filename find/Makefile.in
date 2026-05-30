@@ -352,7 +352,7 @@ libfindtools_a_LIBADD =
 am_libfindtools_a_OBJECTS = finddata.$(OBJEXT) fstype.$(OBJEXT) \
 	parser.$(OBJEXT) pred.$(OBJEXT) exec.$(OBJEXT) tree.$(OBJEXT) \
 	util.$(OBJEXT) sharefile.$(OBJEXT) print.$(OBJEXT) \
-	brightdate.$(OBJEXT)
+	brightdate.$(OBJEXT) color.$(OBJEXT)
 libfindtools_a_OBJECTS = $(am_libfindtools_a_OBJECTS)
 am_bfind_OBJECTS = ftsfind.$(OBJEXT)
 bfind_OBJECTS = $(am_bfind_OBJECTS)
@@ -390,10 +390,11 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/brightdate.Po ./$(DEPDIR)/exec.Po \
-	./$(DEPDIR)/finddata.Po ./$(DEPDIR)/fstype.Po \
-	./$(DEPDIR)/ftsfind.Po ./$(DEPDIR)/getlimits.Po \
-	./$(DEPDIR)/parser.Po ./$(DEPDIR)/pred.Po ./$(DEPDIR)/print.Po \
+am__depfiles_remade = ./$(DEPDIR)/brightdate.Po ./$(DEPDIR)/color.Po \
+	./$(DEPDIR)/exec.Po ./$(DEPDIR)/finddata.Po \
+	./$(DEPDIR)/fstype.Po ./$(DEPDIR)/ftsfind.Po \
+	./$(DEPDIR)/getlimits.Po ./$(DEPDIR)/parser.Po \
+	./$(DEPDIR)/pred.Po ./$(DEPDIR)/print.Po \
 	./$(DEPDIR)/sharefile.Po ./$(DEPDIR)/tree.Po \
 	./$(DEPDIR)/util.Po
 am__mv = mv -f
@@ -2428,10 +2429,10 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = std-options
 AM_CFLAGS = $(WARN_CFLAGS)
 noinst_LIBRARIES = libfindtools.a
-libfindtools_a_SOURCES = finddata.c fstype.c parser.c pred.c exec.c tree.c util.c sharefile.c print.c brightdate.c
+libfindtools_a_SOURCES = finddata.c fstype.c parser.c pred.c exec.c tree.c util.c sharefile.c print.c brightdate.c color.c
 bfind_SOURCES = ftsfind.c
 man_MANS = bfind.1
-EXTRA_DIST = defs.h sharefile.h print.h brightdate.h $(man_MANS)
+EXTRA_DIST = defs.h sharefile.h print.h brightdate.h color.h $(man_MANS)
 AM_CPPFLAGS = -I../gl/lib -I$(top_srcdir)/lib -I$(top_srcdir)/gl/lib -DLOCALEDIR=\"$(localedir)\"
 LDADD = libfindtools.a ../lib/libfind.a ../gl/lib/libgnulib.a $(LIBINTL) $(LIB_CLOCK_GETTIME) $(LIB_EACCESS) $(LIB_SELINUX) $(LIB_CLOSE) $(MODF_LIBM) $(FINDLIBS) $(GETHOSTNAME_LIB) $(LIB_EACCESS) $(LIB_SETLOCALE_NULL) $(LIB_MBRTOWC)
 # gnulib advises we link against <first> because we use <second>:
@@ -2574,6 +2575,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/brightdate.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exec.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/finddata.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fstype.Po@am__quote@ # am--include-marker
@@ -2854,6 +2856,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-local \
 
 distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/brightdate.Po
+	-rm -f ./$(DEPDIR)/color.Po
 	-rm -f ./$(DEPDIR)/exec.Po
 	-rm -f ./$(DEPDIR)/finddata.Po
 	-rm -f ./$(DEPDIR)/fstype.Po
@@ -2911,6 +2914,7 @@ installcheck-am: installcheck-binPROGRAMS
 
 maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/brightdate.Po
+	-rm -f ./$(DEPDIR)/color.Po
 	-rm -f ./$(DEPDIR)/exec.Po
 	-rm -f ./$(DEPDIR)/finddata.Po
 	-rm -f ./$(DEPDIR)/fstype.Po

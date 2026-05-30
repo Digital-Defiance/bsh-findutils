@@ -947,6 +947,14 @@ process_leading_options (int argc, char *argv[])
 	{
 	  process_optimisation_option (argv[i]+2);
 	}
+      else if (0 == strcmp ("--no-color", argv[i])
+	       || 0 == strncmp ("--color=", argv[i], 8)
+	       || 0 == strcmp ("--color", argv[i])
+	       || 0 == strncmp ("--color-scheme=", argv[i], 15))
+	{
+	  /* Color options are handled in fu_color_init() before this runs. */
+	  continue;
+	}
       else
 	{
 	  /* Hmm, must be one of

@@ -86,3 +86,7 @@ check-regexprops: check-regexprops.sh
 	chmod +x check-regexprops
 
 test_splitstring_SOURCES = test_splitstring.c splitstring.c
+
+# "make check TESTS=tests/..." at the top level passes TESTS= down to
+# sub-makes.  Those paths are top-level shell tests, not lib tests.
+override TESTS := $(filter-out tests/%,$(TESTS))

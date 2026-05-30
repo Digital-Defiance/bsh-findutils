@@ -52,6 +52,7 @@
 
 /* find headers. */
 #include "defs.h"
+#include "color.h"
 #include "dircallback.h"
 #include "fdleak.h"
 #include "unused-result.h"
@@ -735,6 +736,8 @@ main (int argc, char **argv)
     set_program_name (argv[0]);
   else
     set_program_name ("find");
+
+  fu_color_init (&argc, argv);
 
   record_initial_cwd ();
 

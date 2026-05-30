@@ -42,6 +42,7 @@
 
 /* find-specific headers. */
 #include "system.h"
+#include "color.h"
 #include "defs.h"
 #include "print.h"
 
@@ -56,6 +57,14 @@
 
 static void checked_fprintf (struct format_val *dest, const char *fmt, ...)
   _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD(2, 3);
+static void checked_fwrite (void *p, size_t siz, size_t nmemb, struct format_val *dest);
+
+static bool format_is_plain_s (const char *fmt);
+static bool format_is_simple_s (const char *fmt, const char **literal_prefix);
+static void print_colored_string (struct format_val *dest, const char *style,
+                                  const char *format, const char *s);
+static void print_colored_bd (struct format_val *dest, const char *format,
+                              char subchar, const char *bd);
 
 
 /* Create a new fprintf segment in *SEGMENT, with type KIND,
@@ -828,6 +837,92 @@ checked_print_quoted (struct format_val *dest,
     nonfatal_nontarget_file_error (errno, dest->filename);
 }
 
+static bool
+format_is_plain_s (const char *fmt)
+{
+  return fmt && strcmp (fmt, "%s") == 0;
+}
+
+/* True when FORMAT is optional leading spaces, then %, optional spaces, s. */
+static bool
+format_is_simple_s (const char *fmt, const char **conversion_start)
+{
+  const char *p = fmt;
+
+  while (*p == ' ')
+    p++;
+  if (conversion_start)
+    *conversion_start = p;
+  if (p[0] != '%')
+    return false;
+  for (p++; *p; p++)
+    {
+      if (*p == 's' && p[1] == '\0')
+        return true;
+      if (*p != ' ')
+        return false;
+    }
+  return false;
+}
+
+static void
+print_colored_string (struct format_val *dest, const char *style,
+                      const char *format, const char *s)
+{
+  const char *conversion_start = format;
+
+  if (!fu_color_stream_active (dest->dest_is_tty)
+      || style == NULL || style[0] == '\0'
+      || !format_is_simple_s (format, &conversion_start))
+    {
+      checked_print_quoted (dest, format, s);
+      return;
+    }
+
+  if (conversion_start > format)
+    checked_fwrite ((void *) format, 1, (size_t) (conversion_start - format), dest);
+
+  checked_fwrite ((void *) style, 1, strlen (style), dest);
+  checked_print_quoted (dest, "%s", s);
+  checked_fwrite ((void *) fu_colors.reset, 1, strlen (fu_colors.reset), dest);
+}
+
+static void
+print_colored_bd (struct format_val *dest, const char *format,
+                  char subchar, const char *bd)
+{
+  const char *style;
+  const char *frac_style;
+  const char *dot;
+
+  if (!fu_color_stream_active (dest->dest_is_tty)
+      || !format_is_plain_s (format))
+    {
+      checked_fprintf (dest, format, bd);
+      return;
+    }
+
+  style = fu_color_bd_style (subchar);
+  frac_style = fu_color_bd_frac_style (subchar);
+  dot = strchr (bd, '.');
+
+  if (dot && frac_style[0] != '\0')
+    {
+      checked_fwrite ((void *) style, 1, strlen (style), dest);
+      checked_fwrite ((void *) bd, 1, (size_t) (dot - bd), dest);
+      checked_fwrite ((void *) fu_colors.reset, 1, strlen (fu_colors.reset), dest);
+      checked_fwrite ((void *) frac_style, 1, strlen (frac_style), dest);
+      checked_fwrite ((void *) dot, 1, strlen (dot), dest);
+      checked_fwrite ((void *) fu_colors.reset, 1, strlen (fu_colors.reset), dest);
+    }
+  else
+    {
+      checked_fwrite ((void *) style, 1, strlen (style), dest);
+      checked_fwrite ((void *) bd, 1, strlen (bd), dest);
+      checked_fwrite ((void *) fu_colors.reset, 1, strlen (fu_colors.reset), dest);
+    }
+}
+
 
 static void
 checked_fwrite (void *p, size_t siz, size_t nmemb, struct format_val *dest)
@@ -933,7 +1028,8 @@ do_fprintf (struct format_val *dest,
           /* sanitised */
           {
             char *base = base_name (pathname);
-            checked_print_quoted (dest, segment->text, base);
+            print_colored_string (dest, FU (&fu_colors, path),
+                                  segment->text, base);
             free (base);
           }
           break;
@@ -985,12 +1081,14 @@ do_fprintf (struct format_val *dest,
                  * print the string because it contains characters
                  * other than just '%s'.  The %h expands to ".".
                  */
-                checked_print_quoted (dest, segment->text, ".");
+                print_colored_string (dest, FU (&fu_colors, path_dim),
+                                      segment->text, ".");
               }
             else
               {
                 *s = '\0';
-                checked_print_quoted (dest, segment->text, pname);
+                print_colored_string (dest, FU (&fu_colors, path_dim),
+                                      segment->text, pname);
               }
             free (pname);
           }
@@ -1043,7 +1141,8 @@ do_fprintf (struct format_val *dest,
               }
             if (linkname)
               {
-                checked_print_quoted (dest, segment->text, linkname);
+                print_colored_string (dest, FU (&fu_colors, symlink),
+                                      segment->text, linkname);
               }
             else
               {
@@ -1109,7 +1208,8 @@ do_fprintf (struct format_val *dest,
 
         case 'p':               /* pathname */
           /* sanitised */
-          checked_print_quoted (dest, segment->text, pathname);
+          print_colored_string (dest, FU (&fu_colors, path),
+                                segment->text, pathname);
           break;
 
         case 'P':               /* pathname with ARGV element stripped */
@@ -1323,7 +1423,9 @@ pred_fprintf (const char *pathname, struct stat *stat_buf, struct predicate *pre
                 default:  ts = get_stat_mtime (stat_buf);      break;
                 }
               /* trusted */
-              checked_fprintf (dest, segment->text, brightdate_format (ts));
+              print_colored_bd (dest, segment->text,
+                                segment->format_char[1],
+                                brightdate_format (ts));
               continue;  /* skip the shared format_date path below */
             default:
               assert (0);
@@ -1357,4 +1459,20 @@ pred_fprintf (const char *pathname, struct stat *stat_buf, struct predicate *pre
         }
     }
   return true;
+}
+
+void
+find_color_print_path (struct format_val *dest, const char *pathname)
+{
+  if (fu_color_stream_active (dest->dest_is_tty))
+    {
+      checked_fwrite ((void *) fu_colors.path, 1, strlen (fu_colors.path), dest);
+      checked_print_quoted (dest, "%s", pathname);
+      checked_fwrite ((void *) fu_colors.reset, 1, strlen (fu_colors.reset), dest);
+      checked_fwrite ("\n", 1, 1, dest);
+    }
+  else
+    {
+      checked_print_quoted (dest, "%s\n", pathname);
+    }
 }

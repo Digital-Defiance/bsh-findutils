@@ -3149,6 +3149,10 @@ check-regexprops: check-regexprops.sh
 	cp  $(srcdir)/check-regexprops.sh check-regexprops
 	chmod +x check-regexprops
 
+# "make check TESTS=tests/..." at the top level passes TESTS= down to
+# sub-makes.  Those paths are top-level shell tests, not lib tests.
+override TESTS := $(filter-out tests/%,$(TESTS))
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

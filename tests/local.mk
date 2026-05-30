@@ -88,6 +88,12 @@ check_PROGRAMS = $(binary_tests)
 binary_tests = \
 	tests/xargs/test-sigusr
 
+# test-sigusr is built at the top level but uses gnulib headers/libs.
+AM_CPPFLAGS = -I. -Igl/lib -I$(top_srcdir)/gl/lib -I$(top_srcdir)/lib
+tests_xargs_test_sigusr_LDADD = lib/libfind.a gl/lib/libgnulib.a \
+  $(LIBINTL) $(LIB_SETLOCALE_NULL) $(LIB_MBRTOWC)
+tests_xargs_test_sigusr_DEPENDENCIES = lib/libfind.a gl/lib/libgnulib.a
+
 ALL_RECURSIVE_TARGETS += check-root
 .PHONY: check-root
 check-root:
@@ -132,8 +138,27 @@ sh_tests = \
   tests/xargs/verbose-quote.sh \
   tests/find/arg-nan.sh \
   tests/find/brightdate_printf.sh \
+  tests/find/color.sh \
   tests/find/brightdate_after_before.sh \
   tests/find/brightdate_daystart.sh \
   $(all_root_tests)
 
-$(TEST_LOGS): $(PROGRAMS)
+# Build bfind (and siblings) before running shell tests.  Use check-am so we
+# do not replace automake's check-TESTS recipe.  Never attach prerequisites
+# to $(TEST_LOGS): that creates empty rules and breaks .sh.log generation.
+BUILT_TEST_PROGS = \
+  find/bfind$(EXEEXT) \
+  locate/blocate$(EXEEXT) \
+  xargs/bxargs$(EXEEXT)
+
+check-am: $(BUILT_TEST_PROGS)
+	@$(if $(and $(filter command line,$(origin TESTS)),$(filter tests/%,$(TESTS))), \
+	  $(MAKE) $(AM_MAKEFLAGS) check-TESTS check_PROGRAMS=, \
+	  $(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS) && \
+	  $(MAKE) $(AM_MAKEFLAGS) check-TESTS)
+
+# Run one or more top-level shell tests without descending into subdirs
+# (which would inherit TESTS= and fail in lib/ etc.).
+.PHONY: check-one
+check-one: $(BUILT_TEST_PROGS)
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS SUBDIRS=

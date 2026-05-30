@@ -361,7 +361,7 @@ am__EXEEXT_1 = tests/xargs/test-sigusr$(EXEEXT)
 tests_xargs_test_sigusr_SOURCES = tests/xargs/test-sigusr.c
 am__dirstamp = $(am__leading_dot)dirstamp
 tests_xargs_test_sigusr_OBJECTS = tests/xargs/test-sigusr.$(OBJEXT)
-tests_xargs_test_sigusr_LDADD = $(LDADD)
+am__DEPENDENCIES_1 =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -2693,6 +2693,13 @@ binary_tests = \
 	tests/xargs/test-sigusr
 
 
+# test-sigusr is built at the top level but uses gnulib headers/libs.
+AM_CPPFLAGS = -I. -Igl/lib -I$(top_srcdir)/gl/lib -I$(top_srcdir)/lib
+tests_xargs_test_sigusr_LDADD = lib/libfind.a gl/lib/libgnulib.a \
+  $(LIBINTL) $(LIB_SETLOCALE_NULL) $(LIB_MBRTOWC)
+
+tests_xargs_test_sigusr_DEPENDENCIES = lib/libfind.a gl/lib/libgnulib.a
+
 # Do not choose a name that is a shell keyword like 'if', or a
 # commonly-used utility like 'cat' or 'test', as the name of a test.
 # Otherwise, VPATH builds will fail on hosts like Solaris, since they
@@ -2731,9 +2738,19 @@ sh_tests = \
   tests/xargs/verbose-quote.sh \
   tests/find/arg-nan.sh \
   tests/find/brightdate_printf.sh \
+  tests/find/color.sh \
   tests/find/brightdate_after_before.sh \
   tests/find/brightdate_daystart.sh \
   $(all_root_tests)
+
+
+# Build bfind (and siblings) before running shell tests.  Use check-am so we
+# do not replace automake's check-TESTS recipe.  Never attach prerequisites
+# to $(TEST_LOGS): that creates empty rules and breaks .sh.log generation.
+BUILT_TEST_PROGS = \
+  find/bfind$(EXEEXT) \
+  locate/blocate$(EXEEXT) \
+  xargs/bxargs$(EXEEXT)
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
@@ -3577,7 +3594,17 @@ clean-local: coverage-clean
 check-root:
 	$(MAKE) check TESTS='$(root_tests)' SUBDIRS=.
 
-$(TEST_LOGS): $(PROGRAMS)
+check-am: $(BUILT_TEST_PROGS)
+	@$(if $(and $(filter command line,$(origin TESTS)),$(filter tests/%,$(TESTS))), \
+	  $(MAKE) $(AM_MAKEFLAGS) check-TESTS check_PROGRAMS=, \
+	  $(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS) && \
+	  $(MAKE) $(AM_MAKEFLAGS) check-TESTS)
+
+# Run one or more top-level shell tests without descending into subdirs
+# (which would inherit TESTS= and fail in lib/ etc.).
+.PHONY: check-one
+check-one: $(BUILT_TEST_PROGS)
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS SUBDIRS=
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

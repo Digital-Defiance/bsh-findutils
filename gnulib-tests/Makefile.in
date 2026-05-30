@@ -11224,6 +11224,10 @@ sys/select.h: sys_select.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(WARN_
 	      $(srcdir)/sys_select.in.h > $@-t
 	$(AM_V_at)mv $@-t $@
 
+# "make check TESTS=tests/..." at the top level passes TESTS= down to
+# sub-makes.  Those paths are top-level shell tests, not gnulib tests.
+override TESTS := $(filter-out tests/%,$(TESTS))
+
 all: all-notice
 all-notice:
 	@echo '## ---------------------------------------------------- ##'

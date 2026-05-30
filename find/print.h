@@ -34,4 +34,6 @@ insert_fprintf (struct format_val *vec,
 		const struct parser_table *entry,
 		char *format);
 
+void find_color_print_path (struct format_val *dest, const char *pathname);
+
 #endif /* PRINT_H */

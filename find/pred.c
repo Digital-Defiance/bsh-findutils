@@ -45,6 +45,7 @@
 
 /* find headers. */
 #include "defs.h"
+#include "print.h"
 #include "dircallback.h"
 #include "listfile.h"
 #include "printquoted.h"
@@ -386,11 +387,7 @@ pred_fprint (const char *pathname, struct stat *stat_buf, struct predicate *pred
   (void) &pathname;
   (void) &stat_buf;
 
-  print_quoted (pred_ptr->args.printf_vec.stream,
-		pred_ptr->args.printf_vec.quote_opts,
-		pred_ptr->args.printf_vec.dest_is_tty,
-		"%s\n",
-		pathname);
+  find_color_print_path (&pred_ptr->args.printf_vec, pathname);
   return true;
 }
 
@@ -858,10 +855,7 @@ pred_print (const char *pathname, struct stat *stat_buf, struct predicate *pred_
   (void) stat_buf;
   (void) pred_ptr;
 
-  print_quoted (pred_ptr->args.printf_vec.stream,
-		pred_ptr->args.printf_vec.quote_opts,
-		pred_ptr->args.printf_vec.dest_is_tty,
-		"%s\n", pathname);
+  find_color_print_path (&pred_ptr->args.printf_vec, pathname);
   return true;
 }
 

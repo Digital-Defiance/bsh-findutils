@@ -3524,6 +3524,10 @@ libtests_a_SOURCES += glthread/yield.h
 
 ## end   gnulib module yield
 
+# "make check TESTS=tests/..." at the top level passes TESTS= down to
+# sub-makes.  Those paths are top-level shell tests, not gnulib tests.
+override TESTS := $(filter-out tests/%,$(TESTS))
+
 all: all-notice
 all-notice:
 	@echo '## ---------------------------------------------------- ##'
