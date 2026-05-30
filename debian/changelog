@@ -1,3 +1,10 @@
+bright-findutils (4.10.0-bd4-1) noble; urgency=medium
+
+  * Add terminal colorization to bfind (--color, BrightDate field colors).
+  * Fix filtered make check TESTS=tests/... for shell test runs.
+
+ -- Digital Defiance <admin@digitaldefiance.org>  Thu, 29 May 2026 00:00:00 +0000
+
 bright-findutils (4.10.0-bd3-1) noble; urgency=medium
 
   * Initial Debian/PPA packaging.
